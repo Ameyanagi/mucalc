@@ -302,7 +302,7 @@ const Content = ({
             </form>
             <br />
             {(samplemass > 0) ?
-                <><h2>Results{(samplemass < 0) || (diluentmass < 0) ? <p style={{ "color": "red" }}>Area or mass is suitable for edge step of {targetedgestep} eV</p> : null}</h2>
+                <><h2>Results{(samplemass < 0) || (diluentmass < 0) ? <p style={{ "color": "red" }}>Area or mass is not suitable for edge step of {targetedgestep} eV</p> : null}</h2>
                     Sample weight: {samplemass} g<br />
                     Diluent weight: {diluentmass} g<br />
                 </> : null}
