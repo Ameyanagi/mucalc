@@ -18,7 +18,7 @@ function App() {
   const [diameter, setDiameter] = useState(JSON.parse(localStorage.getItem('diameter')) || 1.3);
   const [angle, setAngle] = useState(JSON.parse(localStorage.getItem('angle')) || 45);
   const [x_minmax, setX_minmax] = useState(JSON.parse(localStorage.getItem('x_minmax')) || [-200, 1000]);
-  const [x_step, setX_step] = useState(JSON.parse(localStorage.getItem('x_step')) || 0.001);
+  const [x_step, setX_step] = useState(JSON.parse(localStorage.getItem('x_step')) || 1);
   const [plotflag, setPlotflag] = useState(false);
   const [absorption, setAbsorption] = useState({ labels: [0], datasets: [{ label: "total", data: [0] }] });
   const [targetedgestep, setTargetedgestep] = useState(JSON.parse(localStorage.getItem('targetedgestep')) || 1);
