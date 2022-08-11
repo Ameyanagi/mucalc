@@ -1277,22 +1277,20 @@ const n_fit = [
 // e.g. H2O -> {H: 2, O: 1}
 // e.g. H2O2 -> {H: 2, O: 2}
 // e.g. CuO -> {Cu: 1, O: 1}
+// e.g. Cu2O1.5 -> {Cu: 2, O: 1.5}
 
-const regex = /[A-Z][a-z]?\d*|\(.*?\)\d+/g;
+const regex = /([A-Z][a-z]?)(\d*\.?\d*)/g;
+// const regex = /[A-Z][a-z]?\d*|\(.*?\)\d+/g;
 
-// create a function to parse chemical formula
-// e.g. H2O -> {H: 2, O: 1}
-// e.g. H2O2 -> {H: 2, O: 2}
-// e.g. CuO -> {Cu: 1, O: 1}
 
 const getZ = (formula) => {
     let atoms = formula.match(regex);
     let z = {};
     for (let i = 0; i < atoms.length; i++) {
         let atom = atoms[i];
-        let num = atom.match(/\d+/);
+        let num = atom.match(/[\d]+\.?\d*/);
         if (num) {
-            num = parseInt(num[0]);
+            num = parseFloat(num[0]);
         }
         else {
             num = 1;
@@ -1315,6 +1313,38 @@ const mcmaster = (ephot, fit) => {
     return xsec;
 }
 
+const getEdgeEnergy = (atom, edge) => {
+    if (!(element.includes(atom))) {
+        console.log(`MuCal: ${atom} is not a valid element.`);
+        return -1;
+    }
+
+    // Z is a index for atom_name in element
+    let Z = element_dict[atom];
+
+    if ([83, 84, 86, 87, 88, 90, 92].includes(Z)) {
+        console.log(`Mucal: no data available for ${atom}`);
+        return -1;
+    }
+
+    if (edge === 'K') {
+        return k_edge[Z];
+    }
+    else if (edge === 'L1') {
+        return l1_edge[Z];
+    }
+    else if (edge === 'L2') {
+        return l2_edge[Z];
+    }
+    else if (edge === 'L3') {
+        return l3_edge[Z];
+    }
+    else if (edge === 'M') {
+        return m_edge[Z];
+    }
+
+}
+
 const mucal = (atom_name, ephot) => {
 
     if (!(element.includes(atom_name))) {
@@ -1325,8 +1355,9 @@ const mucal = (atom_name, ephot) => {
     // Z is a index for atom_name in element
     let Z = element_dict[atom_name];
 
-    if (Z in [83, 84, 86, 87, 88, 90, 92]) {
+    if ([83, 84, 86, 87, 88, 90, 92].includes(Z)) {
         console.log(`Mucal: no data available for ${atom_name}`);
+        return -1;
     }
 
     if (ephot < 0.0) {
@@ -1359,8 +1390,9 @@ const mucal = (atom_name, ephot) => {
         "k_beta1": k_beta1[Z],
         "l_alpha1": l_alpha1[Z],
         "l_beta1": l_beta1[Z],
+        "index": Z,
     }
-    if (Z+1 > 27) {
+    if (Z + 1 > 27) {
         xsec.l1_jump = l1_jump;
         xsec.l2_jump = l2_jump;
     }
@@ -1373,7 +1405,7 @@ const mucal = (atom_name, ephot) => {
     }
 
     // TO DO
-    if (ephot == 0.0) {
+    if (ephot === 0.0) {
         return -1;
     }
 
@@ -1386,6 +1418,7 @@ const mucal = (atom_name, ephot) => {
     }
 
     /* determine shell being ionized */
+    let shell = 1;
     if (ephot >= k_edge[Z]) shell = 1; // K shell
     else if (ephot >= l3_edge[Z]) shell = 2; // L shell
     else if (ephot >= m_edge[Z]) shell = 3; // M1 subshell
@@ -1400,11 +1433,11 @@ const mucal = (atom_name, ephot) => {
             xsec.barn_photo = mcmaster(ephot, l_fit[Z]);
             if (ephot >= xsec.l1_edge) break;
             else if (ephot >= xsec.l2_edge) {
-                xsec.barn_photo = xsec.barn_photo/xsec.l1_jump;
+                xsec.barn_photo = xsec.barn_photo / xsec.l1_jump;
                 break;
             }
             else if (ephot >= xsec.l3_edge) {
-                xsec.barn_photo = xsec.barn_photo/(xsec.l1_edge * xsec.l2_jump);
+                xsec.barn_photo = xsec.barn_photo / (xsec.l1_jump * xsec.l2_jump);
                 break;
             }
 
@@ -1424,13 +1457,153 @@ const mucal = (atom_name, ephot) => {
     xsec.barn_ncoh = mcmaster(ephot, xsect_ncoh[Z]);
     xsec.barn_tot = xsec.barn_photo + xsec.barn_coh + xsec.barn_ncoh;
 
-    xsec.cm2_photo = xsec.barn_photo/xsec.conversion;
-    xsec.cm2_coh = xsec.barn_coh/xsec.conversion;
-    xsec.cm2_ncoh = xsec.barn_ncoh/xsec.conversion;
-    xsec.cm2g_tot = xsec.barn_tot/xsec.conversion;
+    xsec.cm2_photo = xsec.barn_photo / xsec.conversion;
+    xsec.cm2_coh = xsec.barn_coh / xsec.conversion;
+    xsec.cm2_ncoh = xsec.barn_ncoh / xsec.conversion;
+    xsec.cm2g_tot = xsec.barn_tot / xsec.conversion;
+    xsec.absorption = xsec.cm2g_tot * xsec.density;
 
     return xsec;
 
 }
 
-export { getZ, mucal };
+const calcXRange = (atom_name, x_min, x_max, x_step) => {
+
+    let xrange = [];
+    let epsilon = 0.001;
+
+    if (x_step <= 0) {
+        console.log(`MuCal: x step must be positive.`);
+        return -1;
+    }
+    else if (x_step < 0.001) {
+        epsilon = x_step;
+    }
+
+    let Z = element_dict[atom_name];
+
+    if ([83, 84, 86, 87, 88, 90, 92].includes(Z)) {
+        console.log(`Mucal: no data available for ${atom_name}`);
+        return -1;
+    }
+
+    let energy = {
+        "k_edge": k_edge[Z],
+        "l1_edge": l1_edge[Z],
+        "l2_edge": l2_edge[Z],
+        "l3_edge": l3_edge[Z],
+        "m_edge": m_edge[Z]
+    }
+
+    let x_state = 0.0;
+    if (x_min > energy.k_edge) x_state = energy.k_edge;
+    else if (x_min > energy.l1_edge) x_state = energy.l1_edge;
+    else if (x_min > energy.l2_edge) x_state = energy.l2_edge;
+    else if (x_min > energy.l3_edge) x_state = energy.l3_edge;
+    else if (x_min > energy.m_edge) x_state = energy.m_edge;
+
+    for (let x = x_min; x <= x_max; x += x_step) {
+        if (x_state < energy.k_edge && x > energy.k_edge) {
+            xrange.push(energy.k_edge - epsilon);
+            xrange.push(energy.k_edge + epsilon);
+        }
+        else if (x_state < energy.l1_edge && x > energy.l1_edge) {
+            xrange.push(energy.l1_edge - epsilon);
+            xrange.push(energy.l1_edge + epsilon);
+        }
+        else if (x_state < energy.l2_edge && x > energy.l2_edge) {
+            xrange.push(energy.l2_edge - epsilon);
+            xrange.push(energy.l2_edge + epsilon);
+        }
+        else if (x_state < energy.l3_edge && x > energy.l3_edge) {
+            xrange.push(energy.l3_edge - epsilon);
+            xrange.push(energy.l3_edge + epsilon);
+        }
+        else if (x_state < energy.m_edge && x > energy.m_edge) {
+            xrange.push(energy.m_edge - epsilon);
+            xrange.push(energy.m_edge + epsilon);
+        }
+
+        xrange.push(x)
+        x_state = x;
+    }
+
+    return xrange;
+}
+
+const calcAbsorption = (formula, ephot, area) => {
+    let Z_dict = getZ(formula);
+    let sum_weight = 0.0;
+
+    let results = {};
+    let total_weight = 0.0;
+    let total_absorption = 0.0;
+
+    for (let Z in Z_dict) {
+        const weight = at_weight[element_dict[Z]] * Z_dict[Z];
+
+        results[Z] = {
+            "atom": Z,
+            "index": element_dict[Z],
+            "atomic_weight": at_weight[element_dict[Z]],
+            "weight": weight,
+        }
+
+        total_weight += weight;
+    }
+
+    for (let Z in results) {
+        results[Z]["concentration"] = results[Z].weight / total_weight;
+        results[Z]["abs_g"] = results[Z].concentration * mucal(results[Z].atom, ephot).cm2g_tot / area;
+        total_absorption = total_absorption + results[Z].abs_g;
+    }
+
+    return total_absorption;
+}
+
+const calcEdgeStep = (formula, atom_name, edge, x_step, area) => {
+
+    let Z = element_dict[atom_name];
+    let ephot_min = 0.0;
+    let ephot_max = 0.0;
+
+    if ([83, 84, 86, 87, 88, 90, 92].includes(Z)) {
+        console.log(`Mucal: no data available for ${atom_name}`);
+        return -1;
+    }
+
+    switch (edge) {
+        case "K":
+            ephot_min = k_edge[Z] - x_step;
+            ephot_max = k_edge[Z] + x_step;
+            break;
+
+        case "L1":
+            ephot_min = l1_edge[Z] - x_step;
+            ephot_max = l1_edge[Z] + x_step;
+            break;
+
+        case "L2":
+            ephot_min = l2_edge[Z] - x_step;
+            ephot_max = l2_edge[Z] + x_step;
+            break;
+
+        case "L3":
+            ephot_min = l3_edge[Z] - x_step;
+            ephot_max = l3_edge[Z] + x_step;
+            break;
+
+        case "M":
+            ephot_min = m_edge[Z] - x_step;
+            ephot_max = m_edge[Z] + x_step;
+            break;
+
+        default:
+            break;
+    }
+
+    return calcAbsorption(formula, ephot_max, area) - calcAbsorption(formula, ephot_min, area);
+}
+
+// console.log(getZ("Pt0.1"));
+export { getZ, mucal, calcXRange, calcAbsorption, calcEdgeStep, getEdgeEnergy };
