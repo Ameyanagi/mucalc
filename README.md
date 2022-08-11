@@ -8,6 +8,7 @@ This program is higly inspired by the original MUCAL written by C implementation
 The mucal.js code is in the /src directory.
 [mucal.js](./src/mucalc.js)
 
-## [React application for XAS sample preparation]()
+## [React application for XAS sample preparation](https://ameyanagi.github.io/mucaljs/)
 
 An example of react application to calculate weight for the XAS pellet samples are also included in the repository.
+[Sample page](https://ameyanagi.github.io/mucaljs/)
