@@ -1,13 +1,13 @@
 {
   "files": {
-    "main.css": "/mucaljs/static/css/main.3a0fb274.css",
-    "main.js": "/mucaljs/static/js/main.e62ed8c0.js",
+    "main.css": "/mucaljs/static/css/main.ea9187ae.css",
+    "main.js": "/mucaljs/static/js/main.b74d0afc.js",
     "index.html": "/mucaljs/index.html",
-    "main.3a0fb274.css.map": "/mucaljs/static/css/main.3a0fb274.css.map",
-    "main.e62ed8c0.js.map": "/mucaljs/static/js/main.e62ed8c0.js.map"
+    "main.ea9187ae.css.map": "/mucaljs/static/css/main.ea9187ae.css.map",
+    "main.b74d0afc.js.map": "/mucaljs/static/js/main.b74d0afc.js.map"
   },
   "entrypoints": [
-    "static/css/main.3a0fb274.css",
-    "static/js/main.e62ed8c0.js"
+    "static/css/main.ea9187ae.css",
+    "static/js/main.b74d0afc.js"
   ]
 }
