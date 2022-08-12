@@ -303,10 +303,9 @@ const Content = ({
             <br />
             {(samplemass > 0) ?
                 <><h2>Results{(samplemass < 0) || (diluentmass < 0) ? <p style={{ "color": "red" }}>Area or mass is not suitable for edge step of {targetedgestep} eV</p> : null}</h2>
-                    Sample weight: {samplemass} g<br />
-                    Diluent weight: {diluentmass} g<br />
+                    Sample weight: {Math.round(samplemass*10000)/10000} g<br />
+                    Diluent weight: {Math.round(diluentmass*10000)/10000} g<br />
                 </> : null}
-
 
             {plotflag ? <LineChart
                 style={{ width: '50%' }}

@@ -303,7 +303,18 @@ function App() {
     calcAbsorptionData();
   }
 
-  const linechartoption = {}
+  const linechartoption = {
+    scales: {
+      x: {
+        display: true,
+        ticks: {
+          callback: function (value, index, ticks) {
+            return Math.round(this.getLabelForValue(value) * 1000) / 1000;
+          },
+        }
+      }
+    }
+  }
 
   return (
     <div className="App">

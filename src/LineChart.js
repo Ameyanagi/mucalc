@@ -2,7 +2,7 @@ import React from 'react'
 import { Line } from 'react-chartjs-2'
 import { Chart as ChartJS } from 'chart.js/auto'
 
-const BarChart = ({ chartData, linechartoption }) => {
+const LineChart = ({ chartData, linechartoption }) => {
   return (
     <div className="abschart">
       <Line
@@ -12,4 +12,4 @@ const BarChart = ({ chartData, linechartoption }) => {
   )
 }
 
-export default BarChart
+export default LineChart
