@@ -25,6 +25,7 @@ function App() {
   const [samplemass, setSamplemass] = useState(0);
   const [diluentmass, setDiluentmass] = useState(0);
   const [absorptiondata, setAbsorptiondata] = useState(0);
+  const [csvdata, setCsvdata] = useState(0);
 
   const setAndSaveAtom = (newAtom) => {
     setAtom(newAtom);
@@ -252,6 +253,7 @@ function App() {
     const { sample_weight, diluent_weight } = calcSampleWeight();
 
     const edgeenergy = getEdgeEnergy(atom, edge);
+    let newcsvdata = [["energy [keV]", "sample [abs]", "diluent [abs]", "total [abs]"]];
 
     const newX_range = calcXRange('atom', edgeenergy + x_minmax[0] / 1000, edgeenergy + x_minmax[1] / 1000, x_step / 1000);
     setAndSaveXRange(newX_range);
@@ -262,7 +264,11 @@ function App() {
       newabsorptiondata["sample"].absorption.push(calcAbsorption(sample, newX_range[i], area) * sample_weight);
       newabsorptiondata["diluent"].absorption.push(calcAbsorption(diluent, newX_range[i], area) * diluent_weight);
       newabsorptiondata["total"].absorption.push(newabsorptiondata["sample"].absorption[i] + newabsorptiondata["diluent"].absorption[i]);
+      
+      newcsvdata.push([newX_range[i], newabsorptiondata["sample"].absorption[i], newabsorptiondata["diluent"].absorption[i], newabsorptiondata["total"].absorption[i]]);
     }
+
+    console.log(newcsvdata);
 
     const newchartdata = {
       labels: newX_range,
@@ -294,8 +300,7 @@ function App() {
     }
 
     setAbsorptiondata(newchartdata);
-
-
+    setCsvdata(newcsvdata);
   }
 
   const handleSubmit = (e) => {
@@ -334,6 +339,7 @@ function App() {
         targetedgestep={targetedgestep}
         samplemass={samplemass}
         diluentmass={diluentmass}
+        csvdata={csvdata}
         handleAtomChange={handleAtomChange}
         handleDiluentChange={handleDiluentChange}
         handleSampleChange={handleSampleChange}

@@ -1,4 +1,5 @@
 import React from 'react'
+import { CSVLink } from 'react-csv'
 import LineChart from './LineChart'
 
 // arugument for the content component
@@ -49,6 +50,7 @@ const Content = ({
     targetedgestep,
     samplemass,
     diluentmass,
+    csvdata,
     handleAtomChange,
     handleDiluentChange,
     handleSampleChange,
@@ -306,6 +308,8 @@ const Content = ({
                     Sample weight: {Math.round(samplemass*10000)/10000} g<br />
                     Diluent weight: {Math.round(diluentmass*10000)/10000} g<br />
                 </> : null}
+
+                {(csvdata) ? <><CSVLink filename={"simulated_absorption.csv"} data={csvdata}>Download CSV</CSVLink><br /></>: null}
 
             {plotflag ? <LineChart
                 style={{ width: '50%' }}

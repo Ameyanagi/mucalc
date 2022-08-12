@@ -1605,5 +1605,5 @@ const calcEdgeStep = (formula, atom_name, edge, x_step, area) => {
     return calcAbsorption(formula, ephot_max, area) - calcAbsorption(formula, ephot_min, area);
 }
 
-// console.log(getZ("Pt0.1"));
+// console.log(mucal("Ru", 22));
 export { getZ, mucal, calcXRange, calcAbsorption, calcEdgeStep, getEdgeEnergy };
