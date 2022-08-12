@@ -309,7 +309,7 @@ const Content = ({
                     Diluent weight: {Math.round(diluentmass*10000)/10000} g<br />
                 </> : null}
 
-                {(csvdata) ? <><CSVLink filename={"simulated_absorption.csv"} data={csvdata}>Download CSV</CSVLink><br /></>: null}
+                {(csvdata) ? <><CSVLink filename={[sample, "_", Math.round(samplemass*10000)/10000,"g_", diluent, "_", Math.round(diluentmass*10000)/10000, "g_", "absorption.csv"].join("")} data={csvdata}>Download CSV</CSVLink><br /></>: null}
 
             {plotflag ? <LineChart
                 style={{ width: '50%' }}
